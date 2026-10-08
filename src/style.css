@@ -1,0 +1,790 @@
+:root {
+  color-scheme: dark;
+  --bg: #0b1220;
+  --panel: rgba(12, 18, 32, 0.78);
+  --line: rgba(255, 255, 255, 0.12);
+  --text: #e8eefc;
+  --muted: #9aa8c7;
+  --accent: #7dd3a7;
+  --warn: #f0b429;
+  --danger: #ff7b72;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  font-family: "SF Pro Text", "PingFang SC", "Helvetica Neue", sans-serif;
+  color: var(--text);
+}
+
+#game {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.panel {
+  pointer-events: auto;
+  position: absolute;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  padding: 14px 16px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+
+.title-panel {
+  top: 16px;
+  left: 16px;
+  max-width: 280px;
+}
+
+.title-panel h1 {
+  margin: 0 0 6px;
+  font-size: 20px;
+  letter-spacing: 0.02em;
+}
+
+.title-panel p,
+.help-panel p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.stats-panel {
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: grid;
+  grid-template-columns: repeat(6, minmax(56px, 1fr));
+  gap: 10px 16px;
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat span {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.stat b {
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+
+.genes-panel {
+  top: 16px;
+  right: 16px;
+  width: 260px;
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+}
+
+.roster-panel {
+  top: 118px;
+  left: 16px;
+  width: 280px;
+  max-height: calc(100vh - 430px);
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 8px;
+}
+
+.fate-panel {
+  left: 312px;
+  bottom: 16px;
+  width: 320px;
+  max-height: calc(100vh - 140px);
+  overflow: auto;
+}
+
+.time-panel {
+  left: 16px;
+  bottom: 16px;
+  width: 280px;
+}
+
+.time-panel label,
+.fate-panel h2,
+.genes-panel h2,
+.help-panel h2 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.04em;
+}
+
+.genes-panel h2 + h2 {
+  margin-top: 16px;
+}
+
+.gene-row {
+  display: grid;
+  grid-template-columns: 72px 1fr 36px;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.gene-row .bar {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.gene-row .fill {
+  height: 100%;
+  width: 0%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #5b8def, var(--accent));
+  transition: width 0.25s ease;
+}
+
+#log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 180px;
+  overflow: auto;
+}
+
+#log li {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  line-height: 1.4;
+}
+
+#log li strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.time-panel input[type="range"],
+.fate-panel input[type="range"] {
+  width: 100%;
+  margin: 4px 0 10px;
+}
+
+.time-presets,
+.fate-actions,
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.time-presets button,
+.fate-actions button,
+.tab,
+#pause-btn {
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 5px 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.tab.active {
+  background: rgba(125, 211, 167, 0.2);
+  border-color: var(--accent);
+}
+
+#pause-btn,
+#start-btn {
+  width: 100%;
+}
+
+.hint,
+.meta,
+#fate-empty {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.fate-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.rename-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.rename-row input,
+#player-line {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  padding: 6px 8px;
+  font-size: 12px;
+  font-family: inherit;
+}
+
+#player-line {
+  margin-bottom: 8px;
+  resize: none;
+}
+
+#life-log,
+#civs {
+  margin: 0 0 10px;
+  padding-left: 18px;
+  max-height: 150px;
+  overflow: auto;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+#life-log li {
+  cursor: pointer;
+  margin-bottom: 4px;
+}
+
+#health-fill {
+  background: #7dd3a7;
+}
+
+#hunger-fill {
+  background: #ff7b72;
+}
+
+.pill {
+  font-size: 11px;
+  border-radius: 999px;
+  padding: 2px 8px;
+  background: rgba(125, 211, 167, 0.18);
+  color: var(--accent);
+}
+
+.pill.dead {
+  background: rgba(255, 123, 114, 0.16);
+  color: var(--danger);
+}
+
+#roster {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+}
+
+.person {
+  width: 100%;
+  text-align: left;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: transparent;
+  color: var(--text);
+  padding: 8px 4px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.person small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.person.alive b { color: #8ee0b2; }
+.person.dead b { color: #9aa3b5; }
+.person.selected { background: rgba(255, 224, 138, 0.12); }
+
+#talks,
+#log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 120px;
+  overflow: auto;
+}
+
+#talks li,
+#log li {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  line-height: 1.4;
+}
+
+#world-labels {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+#label-toggle {
+  position: fixed;
+  z-index: 30;
+  top: max(10px, env(safe-area-inset-top));
+  right: max(10px, env(safe-area-inset-right));
+  pointer-events: auto;
+  border: 1px solid var(--line);
+  background: rgba(12, 18, 32, 0.82);
+  color: white;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+#label-toggle.on {
+  background: #248a3d;
+}
+
+body.touch-device.sheet-open #label-toggle {
+  display: none;
+}
+
+.name-tag,
+.bubble {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+.name-tag {
+  color: #e9fff2;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+}
+
+.name-tag.dead { color: #b7becb; }
+.name-tag.selected { color: #ffe08a; font-weight: 700; }
+
+.bubble {
+  background: rgba(255, 255, 255, 0.94);
+  color: #1c2433;
+  padding: 4px 8px;
+  border-radius: 10px;
+  margin-top: -18px;
+  max-width: 180px;
+  white-space: normal;
+  text-align: center;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+.help-panel {
+  display: none;
+}
+
+kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 11px;
+  color: var(--text);
+}
+
+#start-btn {
+  margin-top: 12px;
+  width: 100%;
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: linear-gradient(135deg, #4f7cff, #34c759);
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#start-btn:hover {
+  filter: brightness(1.08);
+}
+
+#crosshair {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 22px;
+  font-weight: 300;
+  pointer-events: none;
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+}
+
+#toast {
+  position: fixed;
+  left: 50%;
+  top: 92px;
+  transform: translateX(-50%);
+  z-index: 5;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+#toast.show {
+  opacity: 1;
+}
+
+@media (max-width: 960px) {
+  .stats-panel {
+    left: 16px;
+    right: 16px;
+    transform: none;
+    top: auto;
+    bottom: 120px;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .genes-panel {
+    display: none;
+  }
+}
+
+#sheet {
+  display: contents;
+}
+
+.panel {
+  transform: scale(var(--card-scale, 1));
+  transform-origin: top left;
+}
+
+.genes-panel {
+  transform-origin: top right;
+}
+
+.time-panel,
+.fate-panel {
+  transform-origin: bottom left;
+}
+
+.stats-panel {
+  transform-origin: top center;
+  transform: translateX(-50%) scale(var(--card-scale, 1));
+}
+
+@media (max-width: 960px) {
+  .stats-panel {
+    transform: scale(var(--card-scale, 1));
+    transform-origin: bottom left;
+  }
+}
+
+body.cards-hidden:not(.sheet-open) .panel {
+  display: none !important;
+}
+
+body.touch-device:not(.sheet-open) .panel {
+  display: none !important;
+}
+
+#card-dock {
+  position: fixed;
+  z-index: 30;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  gap: 6px;
+  pointer-events: auto;
+}
+
+#card-dock button {
+  border: 1px solid var(--line);
+  background: rgba(12, 18, 32, 0.82);
+  color: white;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+body.touch-device #card-dock {
+  display: none;
+}
+
+#sheet-close,
+#touch-ui {
+  display: none;
+}
+
+#install-hint {
+  display: none;
+  position: fixed;
+  z-index: 40;
+  left: 12px;
+  right: 12px;
+  top: max(12px, env(safe-area-inset-top));
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(12, 18, 32, 0.94);
+  border: 1px solid var(--line);
+  pointer-events: auto;
+}
+
+#install-hint p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+#install-hint button,
+#sheet-close {
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #4f7cff;
+  color: white;
+  font-weight: 600;
+}
+
+#install-hint[hidden] {
+  display: none !important;
+}
+
+body.touch-device,
+body.touch-device #game {
+  touch-action: none;
+}
+
+body.touch-device #touch-ui,
+body.touch-device #look-zone,
+body.touch-device #stick,
+body.touch-device #touch-buttons,
+body.touch-device #touch-buttons button {
+  pointer-events: auto;
+}
+
+body.touch-device #touch-ui {
+  display: block;
+}
+
+body.touch-device #install-hint:not([hidden]) {
+  display: flex;
+}
+
+body.touch-device.sheet-open {
+  touch-action: auto;
+}
+
+body.touch-device.sheet-open #sheet {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  background: rgba(8, 12, 22, 0.96);
+  padding: max(12px, env(safe-area-inset-top)) 12px calc(24px + env(safe-area-inset-bottom));
+  pointer-events: auto;
+}
+
+body.touch-device.sheet-open #sheet-close {
+  display: block;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+body.touch-device.sheet-open .panel {
+  position: relative !important;
+  left: auto !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  width: auto !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 0 12px;
+  pointer-events: auto;
+}
+
+body.touch-device.sheet-open .panel button,
+body.touch-device.sheet-open .panel input,
+body.touch-device.sheet-open .panel textarea,
+body.touch-device.sheet-open .panel label,
+body.touch-device.sheet-open .fate-actions button,
+body.touch-device.sheet-open [data-fate] {
+  pointer-events: auto !important;
+  touch-action: manipulation;
+  position: relative;
+  z-index: 3;
+}
+
+body.touch-device.sheet-open #fate-panel {
+  z-index: 5;
+}
+
+body.touch-device.sheet-open .genes-panel {
+  display: block !important;
+}
+
+body.touch-device.sheet-open #look-zone,
+body.touch-device.sheet-open #stick,
+body.touch-device.sheet-open #touch-buttons,
+body.touch-device.sheet-open #touch-ui {
+  pointer-events: none !important;
+  visibility: hidden;
+}
+
+#pick-prompt {
+  display: none;
+  position: fixed;
+  z-index: 40;
+  left: 16px;
+  right: 16px;
+  bottom: max(160px, calc(env(safe-area-inset-bottom) + 150px));
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(12, 18, 32, 0.94);
+  border: 1px solid var(--line);
+  pointer-events: auto;
+  gap: 12px;
+  flex-direction: column;
+}
+
+#pick-prompt:not([hidden]) {
+  display: flex;
+}
+
+#pick-prompt p {
+  margin: 0;
+  font-size: 15px;
+}
+
+.pick-prompt-actions {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 8px;
+}
+
+#pick-prompt button {
+  border: 0;
+  border-radius: 12px;
+  padding: 12px 10px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+#pick-open {
+  background: #4f7cff;
+  color: white;
+}
+
+#pick-skip {
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+}
+
+body.touch-device.sheet-open #pick-prompt {
+  display: none !important;
+}
+
+#look-zone {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  touch-action: none;
+}
+
+#stick {
+  position: fixed;
+  z-index: 6;
+  left: max(18px, env(safe-area-inset-left));
+  bottom: max(28px, env(safe-area-inset-bottom));
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  touch-action: none;
+}
+
+#stick .knob {
+  position: absolute;
+  left: 40px;
+  top: 40px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+#touch-buttons {
+  position: fixed;
+  z-index: 6;
+  right: max(14px, env(safe-area-inset-right));
+  bottom: max(22px, env(safe-area-inset-bottom));
+  display: grid;
+  grid-template-columns: repeat(2, 68px);
+  gap: 10px;
+}
+
+#touch-buttons button {
+  width: 68px;
+  height: 68px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(12, 18, 32, 0.72);
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+  touch-action: none;
+}
+
+#btn-run.on {
+  background: #248a3d;
+}

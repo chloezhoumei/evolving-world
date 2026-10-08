@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="演化世界" />
+    <meta name="theme-color" content="#0b1220" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="./icon-180.png" />
+    <title>演化我的世界</title>
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="game"></canvas>
+      <div id="world-labels"></div>
+
+      <div id="hud">
+        <div id="install-hint" hidden>
+          <p>用 Safari 打开这个页面，点底部分享按钮，选择「添加到主屏幕」。之后从主屏幕图标打开，手机和 iPad 都能当 App 用，换网络也能进。</p>
+          <button id="install-dismiss" type="button">知道了</button>
+        </div>
+        <div id="sheet">
+          <button id="sheet-close" type="button">关闭菜单</button>
+        <div class="panel title-panel">
+          <h1>演化我的世界</h1>
+          <p>死人会变成写着名字的小坟墓，坟墓可以搬走。对活人说话，话会慢慢改变他们的活法。</p>
+        </div>
+
+        <div class="panel stats-panel">
+          <div class="stat"><span>天数</span><b id="day">1</b></div>
+          <div class="stat"><span>时刻</span><b id="clock">07:00</b></div>
+          <div class="stat"><span>活着</span><b id="pop">0</b></div>
+          <div class="stat"><span>死亡</span><b id="deaths">0</b></div>
+          <div class="stat"><span>代数</span><b id="gen">1</b></div>
+          <div class="stat"><span>出生</span><b id="births">0</b></div>
+        </div>
+
+        <div class="panel roster-panel">
+          <div class="tabs">
+            <button id="tab-alive" class="tab active" type="button">活着</button>
+            <button id="tab-dead" class="tab" type="button">死亡</button>
+          </div>
+          <ul id="roster"></ul>
+        </div>
+
+        <div class="panel fate-panel" id="fate-panel">
+          <h2>干预命运</h2>
+          <p id="fate-empty">从左侧名单点一个人，或按 F 选中准星附近的人。</p>
+          <div id="fate-body" hidden>
+            <div class="fate-head">
+              <b id="fate-name">—</b>
+              <span id="fate-status" class="pill">活着</span>
+            </div>
+            <div class="rename-row">
+              <input id="rename-input" maxlength="12" placeholder="新名字" />
+              <button type="button" data-fate="rename">改名</button>
+            </div>
+            <div class="rename-row">
+              <input id="custom-input" maxlength="18" placeholder="写下一条习俗" />
+              <button type="button" data-fate="custom">改习俗</button>
+            </div>
+            <p id="fate-meta" class="meta"></p>
+            <p id="influence-note" class="meta"></p>
+            <h2>对他说</h2>
+            <textarea id="player-line" maxlength="80" rows="2" placeholder="例如：别再打仗，去海边打鱼"></textarea>
+            <div class="fate-actions">
+              <button type="button" data-fate="talk">说给他听</button>
+              <button type="button" data-fate="move-grave">把坟墓迁到身边</button>
+            </div>
+            <p id="npc-reply" class="meta"></p>
+            <div class="mini-bars">
+              <div class="gene-row"><span>饥饿</span><div class="bar"><div id="hunger-fill" class="fill"></div></div><b id="hunger-num">0%</b></div>
+              <div class="gene-row"><span>健康</span><div class="bar"><div id="health-fill" class="fill"></div></div><b id="health-num">0%</b></div>
+            </div>
+            <div class="fate-actions">
+              <button type="button" data-fate="feed">喂饱</button>
+              <button type="button" data-fate="heal">治愈</button>
+              <button type="button" data-fate="rest">休息</button>
+              <button type="button" data-fate="wood">给木头</button>
+              <button type="button" data-fate="endow">赏资本</button>
+              <button type="button" data-fate="doctrine">改思想</button>
+              <button type="button" data-fate="leader">立为首领</button>
+              <button type="button" data-fate="peace">停战</button>
+              <button type="button" data-fate="protect">护佑</button>
+              <button type="button" data-fate="bring">传到身边</button>
+              <button type="button" data-fate="goto">去看他</button>
+              <button type="button" data-fate="path">显示路线</button>
+              <button type="button" data-fate="kill">终结</button>
+              <button type="button" data-fate="revive">复活</button>
+            </div>
+            <h2>从出生到现在</h2>
+            <ol id="life-log"></ol>
+            <h2>改写基因</h2>
+            <div id="fate-genes"></div>
+          </div>
+        </div>
+
+        <div class="panel genes-panel">
+          <h2>文明、思想、资本、势力</h2>
+          <ul id="civs"></ul>
+          <h2>种群平均基因</h2>
+          <div id="gene-bars"></div>
+          <h2>对话</h2>
+          <ul id="talks"></ul>
+          <h2>事件</h2>
+          <ul id="log"></ul>
+        </div>
+
+        <div class="panel time-panel">
+          <h2>时间</h2>
+          <label>当前时刻 <b id="clock-live">07:00</b></label>
+          <input id="time-of-day" type="range" min="0" max="1440" value="420" />
+          <div class="time-presets">
+            <button type="button" data-min="360">黎明</button>
+            <button type="button" data-min="720">正午</button>
+            <button type="button" data-min="1080">黄昏</button>
+            <button type="button" data-min="1320">深夜</button>
+          </div>
+          <label>时间流速 <b id="clock-rate-label">慢</b></label>
+          <input id="clock-rate" type="range" min="0" max="100" value="22" />
+          <label>人物行动 <b id="sim-rate-label">稍慢</b></label>
+          <input id="sim-rate" type="range" min="0" max="100" value="35" />
+          <button id="pause-btn" type="button">暂停一切</button>
+          <p class="hint">电脑：Esc 松开鼠标，F 选中眼前的人。手机和 iPad：左下摇杆走路，右侧空白处滑动转头。</p>
+          <button id="start-btn" type="button">点击进入世界</button>
+        </div>
+        </div>
+
+        <button id="label-toggle" type="button">隐藏头顶</button>
+        <div id="card-dock">
+          <button id="card-smaller" type="button">缩小</button>
+          <button id="card-toggle" type="button">收起卡片</button>
+          <button id="card-larger" type="button">放大</button>
+        </div>
+        <div id="pick-prompt" hidden>
+          <p>已选中 <b id="pick-prompt-name">—</b></p>
+          <div class="pick-prompt-actions">
+            <button id="pick-open" type="button">打开操作面板</button>
+            <button id="pick-skip" type="button">先不打开</button>
+          </div>
+        </div>
+        <div id="touch-ui" hidden>
+          <div id="look-zone"></div>
+          <div id="stick"><div class="knob"></div></div>
+          <div id="touch-buttons">
+            <button id="btn-menu" type="button">菜单</button>
+            <button id="btn-pick" type="button">选人</button>
+            <button id="btn-run" type="button">跑</button>
+            <button id="btn-jump" type="button">跳</button>
+            <button id="btn-mine" type="button">挖</button>
+            <button id="btn-place" type="button">放</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="crosshair">+</div>
+      <div id="toast"></div>
+    </div>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

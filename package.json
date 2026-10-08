@@ -1,0 +1,42 @@
+{
+  "name": "evolving-minecraft",
+  "private": true,
+  "version": "1.0.0",
+  "description": "演化我的世界",
+  "author": "Chloe",
+  "main": "electron/main.cjs",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "app": "npm run build && electron .",
+    "pack": "npm run build && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac dir"
+  },
+  "dependencies": {
+    "three": "^0.170.0"
+  },
+  "devDependencies": {
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
+    "vite": "^6.0.0"
+  },
+  "build": {
+    "appId": "com.local.evolving-minecraft",
+    "productName": "演化我的世界",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.games",
+      "identity": null,
+      "target": [
+        "dir"
+      ]
+    }
+  }
+}
